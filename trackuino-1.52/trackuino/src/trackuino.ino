@@ -48,7 +48,7 @@
 
 // Arduino/AVR libs
 #include <Arduino.h>
-#include "MPU6050/MPU6050_6Axis_MotionApps20.h"
+#include "MPU6050/SimpleMPU.h"
 
 
 // Module constants
@@ -69,10 +69,12 @@ void setup()
   Serial.println("RESET");
 #endif
 
+
   buzzer_setup();
   afsk_setup();
   gps_setup();
   sensors_setup();
+  mpu_setup();
 
 #ifdef DEBUG_SENS
   Serial.print("Ti=");
@@ -97,7 +99,6 @@ void setup()
   else {
     next_aprs = millis();
   }
-
   // TODO: beep while we get a fix, maybe indicating the number of
   // visible satellites by a series of short beeps?
 }
@@ -130,40 +131,28 @@ void get_pos()
 
 void loop()
 {
-  // while (!mpuInterrupt && fifoCount < packetSize) {
-  //     // other program behavior stuff here
-  //     // .
-  //     // .
-  //     // .
-  //     // if you are really paranoid you can frequently test in between other
-  //     // stuff to see if mpuInterrupt is true, and if so, "break;" from the
-  //     // while() loop to immediately process the MPU data
-  //     // .
-  //     // .
-  //     // .
-  // }
+  while(mpu_check_interupt) {
+    // Time for another APRS frame
+    if ((int32_t) (millis() - next_aprs) >= 0) {
+      get_pos();
+      aprs_send();
+      next_aprs += APRS_PERIOD * 1000L;
+      while (afsk_flush()) {
+        power_save();
+      }
 
+  #ifdef DEBUG_MODEM
+      // Show modem ISR stats from the previous transmission
+      afsk_debug();
+  #endif
 
-  // Time for another APRS frame
-  if ((int32_t) (millis() - next_aprs) >= 0) {
-    get_pos();
-    aprs_send();
-    next_aprs += APRS_PERIOD * 1000L;
-    while (afsk_flush()) {
-      power_save();
+    } else {
+      // Discard GPS data received during sleep window
+      while (Serial.available()) {
+        Serial.read();
+      }
     }
-
-#ifdef DEBUG_MODEM
-    // Show modem ISR stats from the previous transmission
-    afsk_debug();
-#endif
-
-  } else {
-    // Discard GPS data received during sleep window
-    while (Serial.available()) {
-      Serial.read();
-    }
+    power_save(); // Incoming GPS data or interrupts will wake us up
   }
-
-  power_save(); // Incoming GPS data or interrupts will wake us up
+  mpu_loop();
 }

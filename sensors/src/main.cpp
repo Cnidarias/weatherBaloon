@@ -46,7 +46,7 @@ void loop() {
   if (cycleCheck(&sensor_lasttime, 100)) {
     manager.read();
     dust.read();
-    Serial.println(manager.getReadString() + dust.getReadString());
+    Serial.println(String(millis()) + " " + manager.getReadString() + dust.getReadString());
   }
 
   if (cycleCheck(&servor_lasttime, 5)) {
