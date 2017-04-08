@@ -1,4 +1,3 @@
-#include <Arduino.h>
 
 /* trackuino copyright (C) 2010  EA5HAV Javi
  *
@@ -49,12 +48,15 @@
 
 // Arduino/AVR libs
 #include <Arduino.h>
+#include "MPU6050/MPU6050_6Axis_MotionApps20.h"
+
 
 // Module constants
 static const uint32_t VALID_POS_TIMEOUT = 2000;  // ms
 
 // Module variables
 static int32_t next_aprs = 0;
+
 
 
 void setup()
@@ -95,6 +97,7 @@ void setup()
   else {
     next_aprs = millis();
   }
+
   // TODO: beep while we get a fix, maybe indicating the number of
   // visible satellites by a series of short beeps?
 }
@@ -127,6 +130,20 @@ void get_pos()
 
 void loop()
 {
+  // while (!mpuInterrupt && fifoCount < packetSize) {
+  //     // other program behavior stuff here
+  //     // .
+  //     // .
+  //     // .
+  //     // if you are really paranoid you can frequently test in between other
+  //     // stuff to see if mpuInterrupt is true, and if so, "break;" from the
+  //     // while() loop to immediately process the MPU data
+  //     // .
+  //     // .
+  //     // .
+  // }
+
+
   // Time for another APRS frame
   if ((int32_t) (millis() - next_aprs) >= 0) {
     get_pos();
