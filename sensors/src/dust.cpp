@@ -1,4 +1,4 @@
-#include "Dust.h"
+#include "dust.h"
 
 Dust::Dust(const int ledPower, const int measurePin)
   : _ledPower(ledPower)
