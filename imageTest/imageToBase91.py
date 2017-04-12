@@ -46,6 +46,7 @@ def print_file(bytesToSend, image_id, filename = None):
             f.write("\n")
         bytescovered = end
         i += 1
+    f.close()
 
 if __name__ == '__main__':
     main()

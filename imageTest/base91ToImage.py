@@ -23,14 +23,12 @@ class regenerateImage():
             return 
 
         if content.endswith(self.endDeliminator):
-            print "got END"
             content = content[:-len(self.endDeliminator)]
             self.endPartNumber = key
             self.endReceived = True
 
 
         self.parts[key] = content
-        print "added" + str(key)
 
         if self.endReceived:
             self.checkImage()
@@ -40,7 +38,6 @@ class regenerateImage():
         i = 0
         while i <= self.endPartNumber:
             if i not in self.parts:
-                print "NOT ALL PARTS"
                 return
             i += 1
         # we have gather all parts - so lets convert and make image
@@ -55,7 +52,6 @@ class regenerateImage():
         ioBuffer = io.BytesIO()
         ioBuffer.write(decodedImage)
         ioBuffer.seek(0)
-        print "made IMAGE"
 
         img = Image.open(ioBuffer)
         img.show()
@@ -65,15 +61,13 @@ class regenerateImage():
 def main():
     imageProcessors = dict()
 
-    filename = "compressed.txt"
+    filename = "uncompressed.txt"
     r = getImage(filename)
     for ele in r:
         res = ele.split("_", 1)
         if res[0] in imageProcessors:
             imageProcessors[res[0]].addPart(ele)
-            print "added processor"
         else:
-            print "made processor"
             imageProcessors[res[0]] = regenerateImage(res[0])
             imageProcessors[res[0]].addPart(ele)
 
@@ -81,9 +75,9 @@ def main():
 
 
 def getImage(filename):
-    return [line.strip() for line in open(filename, 'r')]
-    
-
+    random_list = [line.strip() for line in open(filename, 'r')]
+    random.shuffle(random_list)
+    return random_list
 
 
 
