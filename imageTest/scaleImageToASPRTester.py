@@ -12,14 +12,21 @@ def main(path):
   total = len(files)
   for idx, f in enumerate(files):
     qual = 100
+    file_start = timer()
     while qual >= 5:
       start = timer()
-      res = generateImageBase69(path+"/"+f, qual)
+      try:
+      	res = generateImageBase69(path+"/"+f, qual)
+      except:
+        print("failure on {}".format(f))
+        qual -= 10
+        continue
       end = timer()
       output.write("{},{},{},{},{},{}\n".format(f, qual, res[0], res[1], res[2], (end-start)))
-      qual -= 5
+      qual -= 10
     output.write("\n")
-    print("Progress: {}/{}".format(idx + 1, total))
+    file_end = timer()
+    print("Progress: {}/{} -- {}".format(idx + 1, total, file_end - file_start))
   output.close()
 
 
@@ -60,4 +67,4 @@ def print_file(bytesToSend, image_id):
 
 
 if __name__ == '__main__':
-  main("Mobius")
+  main("mob")
