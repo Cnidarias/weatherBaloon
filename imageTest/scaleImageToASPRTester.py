@@ -9,7 +9,8 @@ def main(path):
   output = open('testresult.txt', 'w')
   output.write("Filename,Quality,ImageSize,UsedPackets,ExecutionTime\n")
   files = next(walk(path))[2]
-  for f in files:
+  total = len(files)
+  for idx, f in enumerate(files):
     qual = 100
     while qual >= 5:
       start = timer()
@@ -18,6 +19,7 @@ def main(path):
       output.write("{},{},{},{},{},{}\n".format(f, qual, res[0], res[1], res[2], (end-start)))
       qual -= 5
     output.write("\n")
+    print("Progress: {}/{}".format(idx + 1, total))
   output.close()
 
 
