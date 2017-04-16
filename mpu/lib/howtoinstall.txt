@@ -1,0 +1,6 @@
+PlatformIO -> Terminal -> Toggle
+
+make sure you are in root of project
+
+platformio lib install file://lib/I2Cdev
+platformio lib install file://lib/MPU6050
