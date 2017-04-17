@@ -30,3 +30,14 @@
 
 .pioenvs/
 .sconsign.dblite
+
+__pycache__
+*.pyc
+
+raspberry/images/*
+
+*/.idea
+*.log
+
+*.clang*
+*.gcc*
