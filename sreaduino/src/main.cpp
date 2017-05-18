@@ -15,34 +15,24 @@ float gpsArray[N_FLOATS] = {0, 0, 0, 0};
 
 unsigned long delayTimer = 0;
 
-MQSensorManager sensorManager(1);
+MQSensorManager sensorManager(5);
 String getGpsString();
 
 
 void setup() {
    Serial.begin(SERIAL_BAUD);
    gps_serial.begin(GPS_BAUD);
-   sensorManager.add("MQ4", 3, 10);
+   sensorManager.add("MQ4", 8, 10);
+   sensorManager.add("MQ4", 9, 10);
+   sensorManager.add("MQ4", 10, 10);
+   sensorManager.add("MQ4", 11, 10);
+   sensorManager.add("MQ4", 12, 10);
 }
 
 void loop() {
-  while(gps_serial.available()){
-         char c = gps_serial.read();
-         //Serial.print(c);
-         if (M8_Gps.encode(c)) {
-          gpsArray[0] = M8_Gps.altitude;
-          gpsArray[1] = M8_Gps.latitude;
-          gpsArray[2] = M8_Gps.longitude;
-          gpsArray[3] = M8_Gps.sats_in_use;
-
-          //if (delayTimer < millis()) {
-            sensorManager.read();
-            String toPrint = sensorManager.getReadString() + getGpsString();
-            Serial.println(toPrint);
-            //delayTimer = millis() + UPDATE_DELAY;
-          //}
-        }
-  }
+    sensorManager.read();
+    String toPrint = sensorManager.getReadString() + getGpsString();
+    Serial.println(toPrint);
 }
 
 
