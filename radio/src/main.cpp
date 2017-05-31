@@ -8,16 +8,23 @@
 
 // #define DEBUG_AX25 1
 
-const char * str = "this is a long string it should be llonger blah blah blah blah blah blah blahlonger blah blah blah blah blah blah blahlonger blah blah blah blah blah blah blahonger blah blah blah blah blah blah blah\0";
+const char * str = "test\0";
+const char * str2 = "another test is something";
 
 void setup()
 {
   Serial.begin(9600);
   Serial.print("start");
+  afsk_setup();
 }
+bool state = false;
 
 void loop()
 {
-  aprs_send(str);
+  if (state) aprs_send(str);
+  else aprs_send(str2);
+
+  state = !state;
+
   delay(10000);
 }
