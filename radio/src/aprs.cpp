@@ -30,7 +30,7 @@ float meters_to_feet(float m)
 }
 
 // Exported functions
-void aprs_send(unsigned char * data)
+void aprs_send(const char * data)
 {
   char temp[12];                   // Temperature (int/ext)
   const struct s_address addresses[] = {
@@ -47,8 +47,8 @@ void aprs_send(unsigned char * data)
   ax25_send_header(addresses, sizeof(addresses)/sizeof(s_address));
 
   ax25_send_byte('{');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
-  ax25_send_byte(data);
-
+  ax25_send_string(data);
+  ax25_send_byte('}');
   ax25_send_footer();
 
   ax25_flush_frame();                 // Tell the modem to go

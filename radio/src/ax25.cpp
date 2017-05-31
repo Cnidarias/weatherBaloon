@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <Arduino.h>
 
+// #define DEBUG_AX25 1
 // Module constants
 static const unsigned int MAX_PACKET = 512;  // bytes
 

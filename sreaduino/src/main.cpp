@@ -3,7 +3,7 @@
 #include "MQSensorManager.h"
 
 #include "Ublox.h"
-#define SERIAL_BAUD 115200
+#define SERIAL_BAUD 9600
 #define GPS_BAUD 9600
 #define N_FLOATS 4
 #define UPDATE_DELAY 10000
@@ -22,16 +22,16 @@ String getGpsString();
 void setup() {
    Serial.begin(SERIAL_BAUD);
    gps_serial.begin(GPS_BAUD);
-   sensorManager.add("MQ4", 8, 10);
-   sensorManager.add("MQ4", 9, 10);
-   sensorManager.add("MQ4", 10, 10);
-   sensorManager.add("MQ4", 11, 10);
-   sensorManager.add("MQ4", 12, 10);
+   sensorManager.add("MQ3 Alk", 8, 10);
+   sensorManager.add("MQ7 CO", 9, 10);
+   sensorManager.add("MQ4 Methan", 10, 10);
+   sensorManager.add("MQ135 NH3", 11, 10);
+   sensorManager.add("MQ131 O3,NO", 12, 10);
 }
 
 void loop() {
     sensorManager.read();
-    String toPrint = sensorManager.getReadString() + getGpsString();
+    String toPrint = sensorManager.getReadString(); // + getGpsString();
     Serial.println(toPrint);
 }
 

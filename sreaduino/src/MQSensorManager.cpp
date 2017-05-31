@@ -32,8 +32,8 @@ MQSensorManager::MQSensorManager(const int how_many)
       res += _namedSensors[i].name;
       res += " v:";
       res += String(_namedSensors[i].sensor->getLastValue());
-      res += " l:";
-      res += String(_namedSensors[i].sensor->getLastLimit());
+      // res += " l:";
+      // res += String(_namedSensors[i].sensor->getLastLimit());
       res += ";";
     }
     return res;

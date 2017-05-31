@@ -9,32 +9,32 @@ from funk import Funk
 
 def main():
     send_image = False
-    funk_serial_port = '/dev/ttyABC'
+    # funk_serial_port = '/dev/ttyABC'
     ports = list(serial.tools.list_ports.comports())
 
     tasks = []
     funk_queue = Queue()
-    funk_image_queue = Queue()
+    # funk_image_queue = Queue()
 
     funk_send_queue = Queue()
 
-    camera_handler = CameraHandler(0, funk_image_queue)
-    camera_handler.daemon = True
-    camera_handler.start()
+    # camera_handler = CameraHandler(0, funk_image_queue)
+    # camera_handler.daemon = True
+    # camera_handler.start()
 
-    funker = Funk(funk_serial_port, 115200, "Funk", funk_send_queue)
+    # funker = Funk(funk_serial_port, 115200, "Funk", funk_send_queue)
 
     for p in ports:
         # Funk serial port is special, so we treat it seperatly
         # not sure if this is really true though
-        if p.device == funk_serial_port:
-            continue
+        #if p.device == funk_serial_port:
+        #    continue
         task = dict()
-        task['task'] = SerialHandler(p.device, 115200, p.name, funk_queue)
+        task['task'] = SerialHandler(p.device, 9600, p.name, funk_queue)
         task['device'] = p.device
         task['device_name'] = p.name
         task['timeout'] = time.time()
-        task['speed'] = 115200
+        task['speed'] = 9600
         task['task'].daemon = True
         task['task'].start()
 
@@ -52,7 +52,7 @@ def main():
                 ports = list(serial.tools.list_ports.comports())
                 for p in ports:
                     if device == p.device:
-                        t['task'] = SerialHandler(device, 115200, t['name'], funk_queue)
+                        t['task'] = SerialHandler(device, 9600, t['name'], funk_queue)
                         t['task'].daemon = True
                         t['task'].start()
                         break
@@ -64,22 +64,22 @@ def main():
 
         # if both queues have data, flip flop between queues,
         # otherwise obviously send the one that is not empty
-        if not funk_queue.empty() and not funk_image_queue.empty():
-            if send_image:
-                print "IMG: {}".format(funk_image_queue.get())
-                funk_send_queue.put(funk_image_queue.get())
-            else:
-                print "DATA: {}".format(funk_queue.get())
-                funk_send_queue.put(funk_queue.get())
+        # if not funk_queue.empty() and not funk_image_queue.empty():
+        #     if send_image:
+        #         print "IMG: {}".format(funk_image_queue.get())
+        #         funk_send_queue.put(funk_image_queue.get())
+        #     else:
+        #         print "DATA: {}".format(funk_queue.get())
+        #         funk_send_queue.put(funk_queue.get())
 
-            send_image = not send_image
+        #     send_image = not send_image
 
-        elif not funk_queue.empty():
-            print "DATA: {}".format(funk_queue.get())
-            funk_send_queue.put(funk_queue.get())
-        elif not funk_image_queue.empty():
-            print "IMG: {}".format(funk_image_queue.get())
-            funk_send_queue.put(funk_image_queue.get())
+        # elif not funk_queue.empty():
+        #     print "DATA: {}".format(funk_queue.get())
+        #     funk_send_queue.put(funk_queue.get())
+        # elif not funk_image_queue.empty():
+        #     print "IMG: {}".format(funk_image_queue.get())
+        #     funk_send_queue.put(funk_image_queue.get())
 
 
 if __name__ == '__main__':

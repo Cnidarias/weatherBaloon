@@ -2,10 +2,21 @@ import logging
 import threading
 import serial
 import time
+from multiprocessing import Queue
 
 
 def has_time_passed(time_pass, oldtime):
     return time.time() - oldtime >= time_pass
+
+class input_thread(threading.Thread):
+  def __init__(self, q):
+    threading.Thread.__init__(self)
+    self.q = q
+
+  def run(self):
+    while True:
+      self.q.put(raw_input())
+
 
 
 class SerialHandler(threading.Thread):
@@ -23,12 +34,21 @@ class SerialHandler(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        self.q = Queue()
+        self.input_task = input_thread(self.q)
+        self.input_task.daemon = True
+        self.input_task.start()
+
         # connect to serial device
         self.retry_connection()
+
 
         # read all data and log them, add them to message queue and be happy
         while True:
             result = self.read_data()
+            if not self.q.empty():
+                logging.info("BREAK")
+                self.q.get()
             if has_time_passed(self.wait_funk_timer, self.last_funkupdate) and result:
                 self.funk_queue.put(self.latest_data)
                 self.last_funkupdate = time.time()
