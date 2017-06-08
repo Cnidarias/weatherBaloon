@@ -23,7 +23,9 @@ void loop()
 {
   if (state) aprs_send(str);
   else aprs_send(str2);
-
+  while (afsk_flush()) {
+    power_save();
+  }
   state = !state;
 
   delay(10000);
