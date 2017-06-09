@@ -8,57 +8,77 @@ from multiprocessing import Queue
 def has_time_passed(time_pass, oldtime):
     return time.time() - oldtime >= time_pass
 
-class input_thread(threading.Thread):
-  def __init__(self, q):
-    threading.Thread.__init__(self)
-    self.q = q
-
-  def run(self):
-    while True:
-      self.q.put(raw_input())
-
-
 
 class SerialHandler(threading.Thread):
-    def __init__(self, serial_port, serial_speed, device_name, funk_queue):
+    def __init__(self, serial_port, serial_speed, device_name, funk_queue, image_queue):
 
+        self.ser = None
         self.serial_port = serial_port
         self.serial_speed = serial_speed
 
         self.wait_funk_timer = 10
         self.last_funkupdate = time.time()
         self.funk_queue = funk_queue
+        self.funk_image_queue = image_queue
         self.latest_data = ""
+
+        self.type = "SENSOR"
+
+        self.can_send_message = False
 
         logging.basicConfig(filename='{}.log'.format(device_name), level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
         threading.Thread.__init__(self)
 
     def run(self):
-        self.q = Queue()
-        self.input_task = input_thread(self.q)
-        self.input_task.daemon = True
-        self.input_task.start()
-
         # connect to serial device
         self.retry_connection()
 
-
         # read all data and log them, add them to message queue and be happy
         while True:
-            result = self.read_data()
-            if not self.q.empty():
-                logging.info("BREAK")
-                self.q.get()
-            if has_time_passed(self.wait_funk_timer, self.last_funkupdate) and result:
-                self.funk_queue.put(self.latest_data)
-                self.last_funkupdate = time.time()
-            if not result:
-                self.ser.close()
-                self.retry_connection()
+            if self.type == "SENSOR":
+                self.sensor_board()
+            else:
+                self.funk_board()
+
+    def sensor_board(self):
+        result = self.read_data()
+        if has_time_passed(self.wait_funk_timer, self.last_funkupdate) and result:
+            self.funk_queue.put(self.latest_data)
+            self.last_funkupdate = time.time()
+        if not result:
+            self.ser.close()
+            self.retry_connection()
+
+    def funk_board(self):
+        try:
+            if not self.funk_queue.empty() and self.can_send_message:
+                self.ser.write(self.funk_queue.get())
+                self.can_send_message = False
+            elif not self.funk_image_queue.empty() and self.can_send_message:
+                self.ser.write(self.funk_image_queue.get())
+                self.can_send_message = False
+            if not self.can_send_message:
+                resp = self.ser.readline()
+                if resp == "FUNK READY":
+                    self.can_send_message = True
+
+        except (serial.SerialException, serial.SerialTimeoutException, ValueError) as e:
+            logging.info("Could not read/write line from/to: {}: {}".format("FUNK", e))
+            self.ser.close()
+            self.retry_connection()
 
     def retry_connection(self):
         while not self.connect_to_serialport():
             time.sleep(5)
+
+        line = self.ser.readline()
+        if line == "FUNK READY":
+            self.type = "FUNK"
+            self.can_send_message = True
+            logging.info("FUNK")
+        else:
+            self.type = "SENSOR"
+            logging.info("SENSOR")
 
     def connect_to_serialport(self):
         try:
@@ -79,5 +99,4 @@ class SerialHandler(threading.Thread):
             logging.info('Could no read line from: {}: {}'.format(self.serial_port, e))
             self.latest_data = "FAILURE"
             return False
-
         return True

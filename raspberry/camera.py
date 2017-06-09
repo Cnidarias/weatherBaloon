@@ -32,7 +32,7 @@ class CameraHandler(threading.Thread):
                 self.last_update = time.time()
 
             if time.time() - self.last_image_funk_name >= self.image_funk_wait:
-                base91_img = self.generate_image_base91("images/IMG{}.png".format(self.image_counter), 40)
+                base91_img = self.generate_image_base91("images/IMG{}.png".format(self.image_counter), 20)
                 packets = self.print_file(base91_img, self.funk_image_id)
                 for p in packets:
                     self.image_queue.put(p)

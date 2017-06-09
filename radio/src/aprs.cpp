@@ -22,17 +22,9 @@
 #include <stdlib.h>
 #include <Arduino.h>
 
-// Module functions
-float meters_to_feet(float m)
-{
-  // 10000 ft = 3048 m
-  return m / 0.3048;
-}
-
 // Exported functions
 void aprs_send(const char * data)
 {
-  char temp[12];                   // Temperature (int/ext)
   const struct s_address addresses[] = {
     {D_CALLSIGN, D_CALLSIGN_ID},  // Destination callsign
     {S_CALLSIGN, S_CALLSIGN_ID},  // Source callsign (-11 = balloon, -9 = car)
@@ -46,8 +38,8 @@ void aprs_send(const char * data)
 
   ax25_send_header(addresses, sizeof(addresses)/sizeof(s_address));
 
-  ax25_send_byte('{');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
-  ax25_send_string(data);
+  ax25_send_byte('{');                // Custom Packet
+  while (*data != '\0') ax25_send_byte(*data++);
   ax25_send_byte('}');
   ax25_send_footer();
 

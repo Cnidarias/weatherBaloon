@@ -6,27 +6,64 @@
 #include "afsk_pic32.h"
 #include "aprs.h"
 
-// #define DEBUG_AX25 1
 
-const char * str = "test\0";
-const char * str2 = "another test is something";
+void getSerialData();
+
+unsigned long last_sent = 0;
+const unsigned long APRS_WAIT = 30000L;
+
+unsigned long last_request = 0;
+const unsigned long REQUEST_WAIT = 1000L;
+
+const byte buffer_size = 255;
+char buffer[buffer_size];
+
+const char * funk_ready = "FUNK READY";
+bool recv_packet = false;
+
 
 void setup()
 {
   Serial.begin(9600);
-  Serial.print("start");
   afsk_setup();
 }
-bool state = false;
 
 void loop()
 {
-  if (state) aprs_send(str);
-  else aprs_send(str2);
-  while (afsk_flush()) {
-    power_save();
+  if (recv_packet) {
+    last_sent = millis();
+    aprs_send(buffer);
+    while (afsk_flush()) {
+    }
+    recv_packet = false;
   }
-  state = !state;
+  else {
+      if (millis() - last_sent > APRS_WAIT) {
+        if (millis() - last_request > REQUEST_WAIT) {
+          Serial.println(funk_ready);
+          last_request = millis();
+        }
+        getSerialData();
+      }
+  }
+}
 
-  delay(10000);
+
+void getSerialData()
+{
+  static byte ndx = 0;
+  char rc;
+  while (Serial.available() > 0) {
+    rc = Serial.read();
+    if (rc != '\n') {
+      buffer[ndx++] = rc;
+      if (ndx >= buffer_size) {
+        ndx = buffer_size - 1;
+      }
+    } else {
+      buffer[ndx] = '\0'; // terminate the string
+      ndx = 0;
+      recv_packet = true;
+    }
+  }
 }
