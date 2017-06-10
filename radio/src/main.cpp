@@ -10,7 +10,7 @@
 void getSerialData();
 
 unsigned long last_sent = 0;
-const unsigned long APRS_WAIT = 30000L;
+const unsigned long APRS_WAIT = 10000L;
 
 unsigned long last_request = 0;
 const unsigned long REQUEST_WAIT = 5000L;

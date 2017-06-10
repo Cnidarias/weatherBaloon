@@ -4,12 +4,9 @@ from multiprocessing import Queue
 
 from serial_handler import SerialHandler
 from camera import CameraHandler
-from funk import Funk
 
 
 def main():
-    send_image = False
-    # funk_serial_port = '/dev/ttyABC'
     ports = list(serial.tools.list_ports.comports())
 
     tasks = []
@@ -19,6 +16,7 @@ def main():
     camera_handler = CameraHandler(0, funk_image_queue)
     camera_handler.daemon = True
     camera_handler.start()
+    camera_timeout = time.time()
 
     for p in ports:
         task = dict()
@@ -54,6 +52,13 @@ def main():
                 if not t['task'].isAlive():
                     t['timeout'] = time.time()
                     pass
+        if not camera_handler.is_alive() and time.time() - camera_timeout >= 5:
+            camera_handler = CameraHandler(0, funk_image_queue)
+            camera_handler.daemon = True
+            camera_handler.start()
+
+        if not camera_handler.is_alive():
+            camera_timeout = time.time()
 
 if __name__ == '__main__':
     main()

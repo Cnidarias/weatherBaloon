@@ -8,6 +8,7 @@ from datetime import datetime
 def metersToFeet(meters):
     return float(meters) / 0.3048
 
+
 def gpsdecimalToDMS(gps, dir_char):
     gps = float(gps)
     # 50.3569
@@ -31,7 +32,6 @@ def getAPRSGPSString(gpsparts):
         return "/{}h{}/{}O/A={}\n".format(time, lat, lon, metersToFeet(parts[0]))
 
 
-
 def has_time_passed(time_pass, oldtime):
     return time.time() - oldtime >= time_pass
 
@@ -43,7 +43,7 @@ class SerialHandler(threading.Thread):
         self.serial_port = serial_port
         self.serial_speed = serial_speed
 
-        self.wait_funk_timer = 30
+        self.wait_funk_timer = 60
         self.last_funkupdate = time.time()
         self.funk_queue = funk_queue
         self.funk_image_queue = image_queue
@@ -73,7 +73,8 @@ class SerialHandler(threading.Thread):
         if has_time_passed(self.wait_funk_timer, self.last_funkupdate) and result:
             if self.latest_data.startswith("gps"):
                 coords = self.latest_data[3:self.latest_data.index(";")]
-                self.funk_queue.put(getAPRSGPSString(coords))
+                if int(coords[1]) != 0:
+                    self.funk_queue.put(getAPRSGPSString(coords))
             self.funk_queue.put("{{{0}}}\n".format(self.latest_data))
             self.last_funkupdate = time.time()
         if not result:

@@ -18,7 +18,7 @@ class CameraHandler(threading.Thread):
         self.image_counter = 0
 
         self.last_image_funk_name = time.time()
-        self.image_funk_wait = 11
+        self.image_funk_wait = 60
         self.funk_image_id = 0
         self.image_queue = image_queue
 
@@ -40,10 +40,12 @@ class CameraHandler(threading.Thread):
                 self.last_image_funk_name = time.time()
 
     def generate_image_base91(self, filename, quality):
-        img = Image.open(filename, mode='r')
+        try:
+            img = Image.open(filename, mode='r')
+        except IOError as e:
+            pass
         img.thumbnail((320, 240), Image.ANTIALIAS)
         img = img.convert('L')
-        img = img.convert('L;4')
         outputCompressed = io.BytesIO()
         img.save(outputCompressed, format='jpeg', optimize=True, quality=quality)
         dataCompressed = outputCompressed.getvalue()
@@ -52,7 +54,7 @@ class CameraHandler(threading.Thread):
         return resCompressed
 
     def generate_header(self, imageID, part):
-        r = str(imageID) + "_" + str(part) + "___"
+        r = str(imageID) + "_" + str(part) + "_"
         return r, len(r)
 
     def print_file(self, bytesToSend, image_id):
