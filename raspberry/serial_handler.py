@@ -1,8 +1,35 @@
-import logging
 import threading
 import serial
 import time
-from multiprocessing import Queue
+import logger
+from datetime import datetime
+
+
+def metersToFeet(meters):
+    return float(meters) / 0.3048
+
+def gpsdecimalToDMS(gps, dir_char):
+    gps = float(gps)
+    # 50.3569
+    # 7.5890
+    d = int(gps)
+    m = int((gps * 60.0) % 60)
+    s = int((abs(gps) * 3600 % 60) * 1.0/60.0 * 100.0)
+    return "{0:02}{1:02}.{2:02}{3}".format(d, m, s, dir_char)
+
+
+def getAPRSGPSString(gpsparts):
+    parts = gpsparts.split(",")
+    if len(parts) == 4:
+        # 0 = altitude
+        # 1 = lat
+        # 2 = long
+        # 3 = num of sats
+        lat = gpsdecimalToDMS(parts[1], 'N')
+        lon = gpsdecimalToDMS(parts[2], 'E')
+        time = datetime.utcnow().strftime("%H%M%S")
+        return "/{}h{}/{}O/A={}\n".format(time, lat, lon, metersToFeet(parts[0]))
+
 
 
 def has_time_passed(time_pass, oldtime):
@@ -16,7 +43,7 @@ class SerialHandler(threading.Thread):
         self.serial_port = serial_port
         self.serial_speed = serial_speed
 
-        self.wait_funk_timer = 10
+        self.wait_funk_timer = 30
         self.last_funkupdate = time.time()
         self.funk_queue = funk_queue
         self.funk_image_queue = image_queue
@@ -26,7 +53,8 @@ class SerialHandler(threading.Thread):
 
         self.can_send_message = False
 
-        logging.basicConfig(filename='{}.log'.format(device_name), level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
+        self.logger = logger.make_logger(device_name)
+
         threading.Thread.__init__(self)
 
     def run(self):
@@ -43,7 +71,10 @@ class SerialHandler(threading.Thread):
     def sensor_board(self):
         result = self.read_data()
         if has_time_passed(self.wait_funk_timer, self.last_funkupdate) and result:
-            self.funk_queue.put(self.latest_data)
+            if self.latest_data.startswith("gps"):
+                coords = self.latest_data[3:self.latest_data.index(";")]
+                self.funk_queue.put(getAPRSGPSString(coords))
+            self.funk_queue.put("{{{0}}}\n".format(self.latest_data))
             self.last_funkupdate = time.time()
         if not result:
             self.ser.close()
@@ -52,18 +83,25 @@ class SerialHandler(threading.Thread):
     def funk_board(self):
         try:
             if not self.funk_queue.empty() and self.can_send_message:
-                self.ser.write(self.funk_queue.get())
+                msg = self.funk_queue.get()
+                print msg
+                self.ser.write(msg)
                 self.can_send_message = False
             elif not self.funk_image_queue.empty() and self.can_send_message:
-                self.ser.write(self.funk_image_queue.get())
+                msg = self.funk_image_queue.get()
+                print msg
+                self.ser.write(msg)
                 self.can_send_message = False
             if not self.can_send_message:
                 resp = self.ser.readline()
-                if resp == "FUNK READY":
+                while resp == '':
+                    resp = self.ser.readline()
+                if resp.startswith("FUNK"):
+                    print "FUNK READY"
                     self.can_send_message = True
 
         except (serial.SerialException, serial.SerialTimeoutException, ValueError) as e:
-            logging.info("Could not read/write line from/to: {}: {}".format("FUNK", e))
+            self.logger.info("Could not read/write line from/to: {}: {}".format("FUNK", e))
             self.ser.close()
             self.retry_connection()
 
@@ -72,20 +110,22 @@ class SerialHandler(threading.Thread):
             time.sleep(5)
 
         line = self.ser.readline()
-        if line == "FUNK READY":
+        while line == '':
+            line =self.ser.readline()
+        if line.startswith("FUNK"):
             self.type = "FUNK"
             self.can_send_message = True
-            logging.info("FUNK")
+            self.logger.info("FUNK")
         else:
             self.type = "SENSOR"
-            logging.info("SENSOR")
+            self.logger.info("SENSOR")
 
     def connect_to_serialport(self):
         try:
             self.ser = serial.Serial(self.serial_port, self.serial_speed, timeout=15)
-            logging.info('Connected to device {} at speed {}'.format(self.serial_port, self.serial_speed))
+            self.logger.info('Connected to device {} at speed {}'.format(self.serial_port, self.serial_speed))
         except (ValueError, serial.SerialException) as e:
-            logging.info('Could not connect to device: {}: {}'.format(self.serial_port, e))
+            self.logger.info('Could not connect to device: {}: {}'.format(self.serial_port, e))
             self.latest_data = "FAILURE"
             return False
 
@@ -94,9 +134,9 @@ class SerialHandler(threading.Thread):
     def read_data(self):
         try:
             self.latest_data = self.ser.readline()
-            logging.info('DATA:{}'.format(self.latest_data))
+            self.logger.info('DATA:{}'.format(self.latest_data))
         except (ValueError, serial.SerialException, serial.SerialTimeoutException) as e:
-            logging.info('Could no read line from: {}: {}'.format(self.serial_port, e))
+            self.logger.info('Could no read line from: {}: {}'.format(self.serial_port, e))
             self.latest_data = "FAILURE"
             return False
         return True

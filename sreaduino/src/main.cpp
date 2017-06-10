@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include "MQSensorManager.h"
+#include "dust.h"
 
 #include "Ublox.h"
 #define SERIAL_BAUD 9600
@@ -8,7 +9,9 @@
 #define N_FLOATS 4
 #define UPDATE_DELAY 10000
 
-SoftwareSerial gps_serial(13, 12);
+void readGps();
+
+SoftwareSerial gps_serial(12, 13);
 Ublox M8_Gps;
 // Altitude - Latitude - Longitude - N Satellites
 float gpsArray[N_FLOATS] = {0, 0, 0, 0};
@@ -17,24 +20,46 @@ unsigned long delayTimer = 0;
 
 MQSensorManager sensorManager(5);
 String getGpsString();
+Dust dust(8, 6);
 
+unsigned long last_sensor_read = 0;
+const unsigned long SENSOR_DELAY = 1000L;
 
 void setup() {
-   Serial.begin(SERIAL_BAUD);
-   gps_serial.begin(GPS_BAUD);
-   sensorManager.add("MQ3 Alk", 8, 10);
-   sensorManager.add("MQ7 CO", 9, 10);
-   sensorManager.add("MQ4 Methan", 10, 10);
-   sensorManager.add("MQ135 NH3", 11, 10);
-   sensorManager.add("MQ131 O3,NO", 12, 10);
+  Serial.begin(SERIAL_BAUD);
+  gps_serial.begin(GPS_BAUD);
+  sensorManager.add("3", 8, 10);
+  sensorManager.add("7", 9, 10);
+  sensorManager.add("4", 10, 10);
+  sensorManager.add("135", 11, 10);
+  sensorManager.add("131", 12, 10);
 }
 
 void loop() {
+  if (millis() - last_sensor_read > SENSOR_DELAY) {
     sensorManager.read();
-    String toPrint = sensorManager.getReadString(); // + getGpsString();
+    dust.read();
+
+    String toPrint = getGpsString() + sensorManager.getReadString() + dust.getReadString();
     Serial.println(toPrint);
+    last_sensor_read = millis();
+  }
+
+  readGps();
 }
 
+void readGps()
+{
+  while(gps_serial.available()){
+    char c = gps_serial.read();
+    if (M8_Gps.encode(c)) {
+      gpsArray[0] = M8_Gps.altitude;
+      gpsArray[1] = M8_Gps.latitude;
+      gpsArray[2] = M8_Gps.longitude;
+      gpsArray[3] = M8_Gps.sats_in_use;
+    }
+  }
+}
 
 String getGpsString()
 {

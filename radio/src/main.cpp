@@ -13,7 +13,7 @@ unsigned long last_sent = 0;
 const unsigned long APRS_WAIT = 30000L;
 
 unsigned long last_request = 0;
-const unsigned long REQUEST_WAIT = 1000L;
+const unsigned long REQUEST_WAIT = 5000L;
 
 const byte buffer_size = 255;
 char buffer[buffer_size];

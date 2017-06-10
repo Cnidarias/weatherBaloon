@@ -30,7 +30,7 @@ def main():
         task['task'].daemon = True
         task['task'].start()
 
-        print("Started {}".format(p.device))
+        print "Started {}".format(p.device)
         tasks.append(task)
 
     while True:

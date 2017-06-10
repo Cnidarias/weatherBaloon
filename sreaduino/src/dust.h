@@ -18,7 +18,7 @@ private:
   float _dustDensity;
 
   const int _samplingTime = 280;
-  const int _deltaTime = 50;
+  const int _deltaTime = 40;
   const int _sleepTime = 9680;
 };
 

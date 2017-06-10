@@ -14,11 +14,11 @@ class CameraHandler(threading.Thread):
         time.sleep(0.1)
 
         self.last_update = time.time()
-        self.wait_time = 10
+        self.wait_time = 60
         self.image_counter = 0
 
         self.last_image_funk_name = time.time()
-        self.image_funk_wait = 60
+        self.image_funk_wait = 11
         self.funk_image_id = 0
         self.image_queue = image_queue
 
@@ -35,6 +35,7 @@ class CameraHandler(threading.Thread):
                 base91_img = self.generate_image_base91("images/IMG{}.png".format(self.image_counter), 20)
                 packets = self.print_file(base91_img, self.funk_image_id)
                 for p in packets:
+                    print p
                     self.image_queue.put(p)
                 self.last_image_funk_name = time.time()
 
@@ -42,6 +43,7 @@ class CameraHandler(threading.Thread):
         img = Image.open(filename, mode='r')
         img.thumbnail((320, 240), Image.ANTIALIAS)
         img = img.convert('L')
+        img = img.convert('L;4')
         outputCompressed = io.BytesIO()
         img.save(outputCompressed, format='jpeg', optimize=True, quality=quality)
         dataCompressed = outputCompressed.getvalue()

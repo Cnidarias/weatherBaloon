@@ -37,10 +37,7 @@ void aprs_send(const char * data)
   };
 
   ax25_send_header(addresses, sizeof(addresses)/sizeof(s_address));
-
-  ax25_send_byte('{');                // Custom Packet
   while (*data != '\0') ax25_send_byte(*data++);
-  ax25_send_byte('}');
   ax25_send_footer();
 
   ax25_flush_frame();                 // Tell the modem to go
