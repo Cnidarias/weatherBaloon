@@ -29,7 +29,7 @@ def getAPRSGPSString(gpsparts):
         lat = gpsdecimalToDMS(parts[1], 'N')
         lon = gpsdecimalToDMS(parts[2], 'E')
         time = datetime.utcnow().strftime("%H%M%S")
-        return "/{}h{}/{}O/A={}\n".format(time, lat, lon, metersToFeet(parts[0]))
+        return "/{0}h{1}/{2}O/A={3:.2f}\n".format(time, lat, lon, metersToFeet(parts[0]))
 
 
 def has_time_passed(time_pass, oldtime):

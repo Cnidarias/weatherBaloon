@@ -1,0 +1,20 @@
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='fotorama/fotorama.css')}}">
+<script src="{{url_for('static', filename='fotorama/fotorama.js')}}"></script>
+
+<div style="display:block;width:400px;margin-left:auto;margin-right:auto;">
+<div class="fotorama contentText" 
+  startindex="0"
+  data-nav="thumbs" 
+  data-loop="true" 
+  data-shuffle="true" 
+  data-autoplay="8000"
+  data-width="320"
+  data-ratio="4/3">
+    {% for item in files %}
+        <img src="{{url_for('static', filename='images/'+item)}}" data-caption="{{item}}">
+    {% endfor %}
+</div>
+    <small>All APRS data from <a href="aprs.fi">aprs.fi</a> - Thanks!</small>
+</div>
+

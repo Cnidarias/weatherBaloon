@@ -11,5 +11,5 @@ def make_logger(logname):
 
     l.setLevel(logging.DEBUG)
     l.addHandler(fileHandler)
-    l.addHandler(streamHandler)
+    # l.addHandler(streamHandler)
     return l
