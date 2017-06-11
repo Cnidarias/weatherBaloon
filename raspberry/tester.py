@@ -45,7 +45,7 @@ def print_file(bytesToSend, image_id):
 
     while bytescovered < len(bytesToSend):
         head = generate_header(image_id, i)
-        end = bytescovered + (255 - head[1])
+        end = bytescovered + (155 - head[1])
         part = head[0] + bytesToSend[bytescovered:end] + "\n"
         bytescovered = end
         i += 1
