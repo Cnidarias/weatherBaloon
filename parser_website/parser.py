@@ -53,7 +53,7 @@ class AprsFiParser(threading.Thread):
                 break
 
 if __name__ == '__main__':
-    r = AprsFiParser(False)
+    r = AprsFiParser(True)
     r.daemon = True
     r.start()
     while True:
