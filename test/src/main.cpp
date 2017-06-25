@@ -2,16 +2,16 @@
 
 void setup()
 {
-  pinMode(3, OUTPUT);
+  pinMode(2, OUTPUT);
 }
 bool status = false;
 void loop()
 {
     if (status)
-     digitalWrite(3, HIGH);
+     digitalWrite(2, HIGH);
 
     else
-      digitalWrite(3, LOW);
+      digitalWrite(2, LOW);
     status = !status;
-    delay(100);
+    delay(10000);
 }
