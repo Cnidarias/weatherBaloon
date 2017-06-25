@@ -16,7 +16,10 @@ def gpsdecimalToDMS(gps, dir_char):
     d = int(gps)
     m = int((gps * 60.0) % 60)
     s = int((abs(gps) * 3600 % 60) * 1.0/60.0 * 100.0)
-    return "{0:02}{1:02}.{2:02}{3}".format(d, m, s, dir_char)
+    if dir_char == 'N':
+        return "{0:02}{1:02}.{2:02}{3}".format(d, m, s, dir_char)
+    else:
+        return "{0:02}{1:03}.{2:02}{3}".format(d, m, s, dir_char)
 
 
 def getAPRSGPSString(gpsparts):
@@ -29,7 +32,7 @@ def getAPRSGPSString(gpsparts):
         lat = gpsdecimalToDMS(parts[1], 'N')
         lon = gpsdecimalToDMS(parts[2], 'E')
         time = datetime.utcnow().strftime("%H%M%S")
-        return "/{0}h{1}/{2}/A={3:.2f}\n".format(time, lat, lon, metersToFeet(parts[0]))
+        return "/{0}h{1}/{2}O/A={3:.2f}\n".format(time, lat, lon, metersToFeet(parts[0]))
 
 
 def has_time_passed(time_pass, oldtime):
