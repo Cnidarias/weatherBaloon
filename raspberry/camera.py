@@ -9,10 +9,8 @@ from PIL import Image
 class CameraHandler(threading.Thread):
     def __init__(self, cam_id, image_queue):
         threading.Thread.__init__(self)
-
-        self.cam = Camera(cam_id)
-        time.sleep(0.1)
-
+        self.cam_id = cam_id
+        
         self.last_update = time.time()
         self.wait_time = 60
         self.image_counter = 0
@@ -23,21 +21,25 @@ class CameraHandler(threading.Thread):
         self.image_queue = image_queue
 
     def run(self):
+        self.cam = Camera(self.cam_id, prop_set={'width':1280, 'height':800}, threaded=True)
+        time.sleep(10)
+        
         while True:
             if time.time() - self.last_update >= self.wait_time:
                 self.image_counter += 1
                 img = self.cam.getImage()
-                img.save("images/IMG{}.png".format(self.image_counter))
+                img.save("images/{}/IMG{}.png".format(self.cam_id, self.image_counter))
                 print "Saved Image"
                 self.last_update = time.time()
 
-            if time.time() - self.last_image_funk_name >= self.image_funk_wait:
-                base91_img = self.generate_image_base91("images/IMG{}.png".format(self.image_counter), 20)
+            if time.time() - self.last_image_funk_name >= self.image_funk_wait and self.image_queue.empty():
+                base91_img = self.generate_image_base91("images/{}/IMG{}.png".format(self.cam_id, self.image_counter), 20)
                 packets = self.print_file(base91_img, self.funk_image_id)
                 for p in packets:
                     print p
                     self.image_queue.put(p)
                 self.last_image_funk_name = time.time()
+                self.funk_image_id += 1
 
     def generate_image_base91(self, filename, quality):
         try:
@@ -54,7 +56,7 @@ class CameraHandler(threading.Thread):
         return resCompressed
 
     def generate_header(self, imageID, part):
-        r = str(imageID) + "_" + str(part) + "_"
+        r = str(self.cam_id) + "_" + str(imageID) + "_" + str(part) + "_"
         return r, len(r)
 
     def print_file(self, bytesToSend, image_id):
@@ -64,7 +66,7 @@ class CameraHandler(threading.Thread):
 
         while bytescovered < len(bytesToSend):
             head = self.generate_header(image_id, i)
-            end = bytescovered + (155 - head[1])
+            end = bytescovered + (255 - head[1])
             part = head[0] + bytesToSend[bytescovered:end] + "\n"
             bytescovered = end
             i += 1
