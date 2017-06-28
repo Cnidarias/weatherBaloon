@@ -1,23 +1,25 @@
 import io
 import base91
-from PIL import Image
+import os
+from PIL import Image, ImageFile
 
 
 class ImageConverter:
-    def __init__(self):
+    def __init__(self, camera):
         self.items = dict()
+        self.camera = camera
 
     def addPacket(self, packet):
+        packet = packet.rstrip('\n')
         packet = packet.split('_', 2)
         image_name = packet[0]
         image_index = int(packet[1])
         image_content = packet[2]
-        print(image_index)
-        print(image_content)
+        print('Name: {} Index: {} Content: {}'.format(image_name, image_index, image_content))
         if image_name in self.items:
             if image_content[-5:] == '__END':
                 image_content = image_content[:-5]
-                print("OK")
+                print("GOT END")
                 self.items[image_name]['has_end'] = True
 
             self.items[image_name]['elements'][image_index] = image_content
@@ -37,7 +39,7 @@ class ImageConverter:
 
             if image_content[-5:] == '__END':
                 image_content = image_content[:-5]
-                print("OK")
+                print("GOT END")
                 self.items[image_name]['has_end'] = True
                 n['elements'][image_index] = image_content
 
@@ -63,6 +65,9 @@ class ImageConverter:
         ioBuffer.write(decodedImage)
         ioBuffer.seek(0)
 
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
         img = Image.open(ioBuffer)
-        img.save('static/images/{}.jpg'.format(imname))
+        if not os.path.exists('static/images/'):
+            os.makedirs('static/images/')
+        img.save('static/images/{}_{}.jpg'.format(self.camera, imname))
         return True

@@ -8,14 +8,16 @@ from gps_converter import GpsConverter
 
 
 class AprsFiParser(threading.Thread):
-    def __init__(self, website):
+    def __init__(self, website, queue):
         threading.Thread.__init__(self)
         self.last_date = None
+        self.queue = queue
         self.last_packet = ''
-        self.call_sign = 'DG2PU-11'
+        self.call_sign = 'MYCALL-11'
         self.url = 'https://aprs.fi/?c=raw&call={}&limit=50&view=normal'.format(self.call_sign)
 
-        self.image_converter = ImageConverter()
+        self.image_converter = ImageConverter(0)
+        self.image_converter1 = ImageConverter(1)
         self.gps_covnerter = GpsConverter()
         self.website = website
 
@@ -37,20 +39,35 @@ class AprsFiParser(threading.Thread):
                     if self.last_date is None or d > self.last_date:
                         packet = line[1][line[1].index(':')+1:]
                         if packet[0] == '{':
-                            self.image_converter.addPacket(packet)
+                            # self.data_converter.addPacket(packet)
+                            pass
                         elif packet[0] == '/':
                             self.gps_covnerter.addPacket(packet)
                         else:
+                            if packet[0] == '0':
+                                self.image_converter.addPacket(packet[2:])
+                            else:
+                                self.image_converter1.addPacket(packet[2:])
                             print(packet)
 
                 self.last_date = max_date
                 print(self.last_date)
                 time.sleep(60)
             else:
-                with open('images.txt', 'r') as f:
-                    for l in f:
-                        self.image_converter.addPacket(l.rstrip('\n'))
-                break
+                if not self.queue.empty():
+                    line = self.queue.get().split(self.call_sign)
+                    if len(line) > 1:
+                        packet = line[1][line[1].index(':')+1:]
+                        if packet[0] == '{':
+                            # self.data_converter.addPacket(packet)
+                            pass
+                        elif packet[0] == '/':
+                            self.gps_covnerter.addPacket(packet)
+                        else:
+                            if packet[0] == '0':
+                                self.image_converter.addPacket(packet[2:])
+                            else:
+                                self.image_converter1.addPacket(packet[2:])
 
 if __name__ == '__main__':
     r = AprsFiParser(True)
