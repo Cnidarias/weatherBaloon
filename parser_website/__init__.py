@@ -18,7 +18,7 @@ aprs_data = Queue()
 def create_app(configfile=None):
     app = Flask(__name__)
 
-    aprsparser = AprsFiParser(False, aprs_data)
+    aprsparser = AprsFiParser(False, aprs_data, app.logger)
     aprsparser.daemon = True
     aprsparser.start()
     return app

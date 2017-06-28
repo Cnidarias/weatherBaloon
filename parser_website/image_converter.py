@@ -2,14 +2,17 @@ import io
 import base91
 import os
 from PIL import Image, ImageFile
+import logging
 
 
 class ImageConverter:
-    def __init__(self, camera):
+    def __init__(self, camera, logger):
         self.items = dict()
+        self.logger = logger
         self.camera = camera
 
     def addPacket(self, packet):
+        self.logger.error("TEST")
         packet = packet.rstrip('\n')
         packet = packet.split('_', 2)
         image_name = packet[0]
@@ -70,4 +73,6 @@ class ImageConverter:
         if not os.path.exists('static/images/'):
             os.makedirs('static/images/')
         img.save('static/images/{}_{}.jpg'.format(self.camera, imname))
+        self.logger.error('SAVED FILE')
+        self.logger.error('SAVED FILE')
         return True

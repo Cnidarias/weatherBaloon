@@ -8,16 +8,17 @@ from gps_converter import GpsConverter
 
 
 class AprsFiParser(threading.Thread):
-    def __init__(self, website, queue):
+    def __init__(self, website, queue, logger):
         threading.Thread.__init__(self)
         self.last_date = None
+        self.logger = logger
         self.queue = queue
         self.last_packet = ''
         self.call_sign = 'MYCALL-11'
         self.url = 'https://aprs.fi/?c=raw&call={}&limit=50&view=normal'.format(self.call_sign)
 
-        self.image_converter = ImageConverter(0)
-        self.image_converter1 = ImageConverter(1)
+        self.image_converter = ImageConverter(0, self.logger)
+        self.image_converter1 = ImageConverter(1, self.logger)
         self.gps_covnerter = GpsConverter()
         self.website = website
 
