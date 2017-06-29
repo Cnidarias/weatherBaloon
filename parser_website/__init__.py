@@ -47,6 +47,10 @@ def gps():
     gps = aprs.get_gps()
     return render_template('googleMpas.html', lat=gps[0], long = gps[1], h=gps[2])
 
+@app.route('/gps_data', methods=['GET'])
+def gps_data():
+    gps = aprs.get_gps()
+    return json.dumps({'lat':gps[0], 'lon':gps[1], 'h':gps[2]}), 200, {'ContentType': 'application/json'}
 
 
 

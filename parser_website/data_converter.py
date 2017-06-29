@@ -15,6 +15,8 @@ class data_converter:
             gps = parts[0].split(':')[1]
 
             gps_parts = gps.split(',')
+            print(gps_parts)
+            if len(gps_parts) != 4: return
             self.height = gps_parts[0]
             self.gpsLat = gps_parts[1]
             self.gpsLon = gps_parts[2]
