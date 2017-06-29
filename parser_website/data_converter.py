@@ -1,7 +1,8 @@
+import requests
 class data_converter:
     def __init__(self):
-        date = None
-        data = None
+        self.date = None
+        self.data = None
         self.gpsLat = None
         self.gpsLon = None
         self.height = None
@@ -20,7 +21,19 @@ class data_converter:
             self.height = gps_parts[0]
             self.gpsLat = gps_parts[1]
             self.gpsLon = gps_parts[2]
+
+            try:
+                requests.post('http://strato.cnidarias.net/set_data',json={'lat': self.gpsLat, 'lon': self.gpsLon, 'h': self.height})
+            except:
+                pass
+
             print(self.height, self.gpsLat, self.gpsLon)
 
     def getLoc(self):
         return self.gpsLat, self.gpsLon, self.height
+
+    def setPos(self, gpsLat, gpsLon, height):
+        self.gpsLat = gpsLat
+        self.gpsLon = gpsLon
+        self.height = height
+

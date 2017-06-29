@@ -52,6 +52,11 @@ def gps_data():
     gps = aprs.get_gps()
     return json.dumps({'lat':gps[0], 'lon':gps[1], 'h':gps[2]}), 200, {'ContentType': 'application/json'}
 
+@app.route('/set_data', methods=['POST'])
+def set_gps():
+    pos = request.get_json()
+    aprs.set_gps(pos['lat'], pos['lon'], pos['h'])
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 

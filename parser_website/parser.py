@@ -27,6 +27,8 @@ class AprsFiParser(threading.Thread):
 
     def get_gps(self):
         return self.data_converter.getLoc()
+    def set_gps(self, lat, lon, h):
+        self.data_converter.setPos(lat, lon, h)
 
     def run(self):
         while True:
