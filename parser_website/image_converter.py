@@ -6,10 +6,11 @@ import logging
 
 
 class ImageConverter:
-    def __init__(self, camera, logger):
+    def __init__(self, camera, logger, path):
         self.items = dict()
         self.logger = logger
         self.camera = camera
+        self.path = path
 
     def addPacket(self, packet):
         self.logger.error("TEST")
@@ -70,9 +71,7 @@ class ImageConverter:
 
         ImageFile.LOAD_TRUNCATED_IMAGES = True
         img = Image.open(ioBuffer)
-        if not os.path.exists('static/images/'):
-            os.makedirs('static/images/')
-        img.save('static/images/{}_{}.jpg'.format(self.camera, imname))
+        img.save(os.path.join(self.path, '{}_{}.jpg'.format(self.camera, imname)))
         self.logger.error('SAVED FILE')
         self.logger.error('SAVED FILE')
         return True
