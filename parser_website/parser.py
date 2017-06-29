@@ -9,17 +9,18 @@ from data_converter import data_converter
 
 
 class AprsFiParser(threading.Thread):
-    def __init__(self, website, queue, logger):
+    def __init__(self, website, queue, logger, path):
         threading.Thread.__init__(self)
         self.last_date = None
+        self.path = path
         self.logger = logger
         self.queue = queue
         self.last_packet = ''
         self.call_sign = 'DG2PU-11'
         self.url = 'https://aprs.fi/?c=raw&call={}&limit=1000&view=normal'.format(self.call_sign)
 
-        self.image_converter = ImageConverter(0, self.logger)
-        self.image_converter1 = ImageConverter(1, self.logger)
+        self.image_converter = ImageConverter(0, self.logger, self.path)
+        self.image_converter1 = ImageConverter(1, self.logger, self.path)
         self.gps_covnerter = GpsConverter()
         self.website = website
         self.data_converter = data_converter()
@@ -61,6 +62,7 @@ class AprsFiParser(threading.Thread):
                 time.sleep(60)
             else:
                 if not self.queue.empty():
+                    self.logger.warn("QUEUE")
                     line = self.queue.get().split(self.call_sign)
                     if len(line) > 1:
                         packet = line[1][line[1].index(':')+1:]

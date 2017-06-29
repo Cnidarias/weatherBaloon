@@ -18,7 +18,7 @@ aprs_data = Queue()
 def create_app(configfile=None):
     app = Flask(__name__)
 
-    aprsparser = AprsFiParser(True, aprs_data, app.logger)
+    aprsparser = AprsFiParser(True, aprs_data, app.logger, os.path.join(app.static_folder, 'images'))
     aprsparser.daemon = True
     aprsparser.start()
     return app, aprsparser
@@ -35,6 +35,9 @@ def new_school():
 
 @app.route('/data', methods=['POST'])
 def post_data():
+    with open(os.path.join(app.static_folder, 'images', 'TEST.txt'), 'w') as f:
+       f.write("TEST")
+    app.logger.warn("GOT GET")
     aprs_data.put(request.get_json()['data'])
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
