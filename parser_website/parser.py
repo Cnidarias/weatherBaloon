@@ -5,6 +5,7 @@ import datetime
 import time
 from image_converter import ImageConverter
 from gps_converter import GpsConverter
+from data_converter import data_converter
 
 
 class AprsFiParser(threading.Thread):
@@ -14,13 +15,17 @@ class AprsFiParser(threading.Thread):
         self.logger = logger
         self.queue = queue
         self.last_packet = ''
-        self.call_sign = 'MYCALL-11'
-        self.url = 'https://aprs.fi/?c=raw&call={}&limit=50&view=normal'.format(self.call_sign)
+        self.call_sign = 'DG2PU-11'
+        self.url = 'https://aprs.fi/?c=raw&call={}&limit=1000&view=normal'.format(self.call_sign)
 
         self.image_converter = ImageConverter(0, self.logger)
         self.image_converter1 = ImageConverter(1, self.logger)
         self.gps_covnerter = GpsConverter()
         self.website = website
+        self.data_converter = data_converter()
+
+    def get_gps(self):
+        return self.data_converter.getLoc()
 
     def run(self):
         while True:
@@ -40,7 +45,7 @@ class AprsFiParser(threading.Thread):
                     if self.last_date is None or d > self.last_date:
                         packet = line[1][line[1].index(':')+1:]
                         if packet[0] == '{':
-                            # self.data_converter.addPacket(packet)
+                            self.data_converter.addPacket(packet, max_date)
                             pass
                         elif packet[0] == '/':
                             self.gps_covnerter.addPacket(packet)

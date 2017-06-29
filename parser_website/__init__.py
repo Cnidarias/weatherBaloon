@@ -18,12 +18,12 @@ aprs_data = Queue()
 def create_app(configfile=None):
     app = Flask(__name__)
 
-    aprsparser = AprsFiParser(False, aprs_data, app.logger)
+    aprsparser = AprsFiParser(True, aprs_data, app.logger)
     aprsparser.daemon = True
     aprsparser.start()
-    return app
+    return app, aprsparser
 
-app= create_app()
+app, aprs= create_app()
 
 
 @app.route('/', methods=['GET'])
@@ -37,6 +37,12 @@ def new_school():
 def post_data():
     aprs_data.put(request.get_json()['data'])
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+
+@app.route('/gps', methods=['GET'])
+def gps():
+    gps = aprs.get_gps()
+    return render_template('googleMpas.html', lat=gps[0], long = gps[1], h=gps[2])
 
 
 
