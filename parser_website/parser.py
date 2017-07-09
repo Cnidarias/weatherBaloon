@@ -54,9 +54,11 @@ class AprsFiParser(threading.Thread):
                             self.gps_covnerter.addPacket(packet)
                         else:
                             if packet[0] == '0':
-                                self.image_converter.addPacket(packet[2:])
+                                # self.image_converter.addPacket(packet[2:])
+                                pass
                             else:
-                                self.image_converter1.addPacket(packet[2:])
+                                # self.image_converter1.addPacket(packet[2:])
+                                pass
                             print(packet)
 
                 self.last_date = max_date
